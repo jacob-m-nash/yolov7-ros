@@ -17,6 +17,7 @@ import rospy
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+from std_msgs.msg import String
 
 
 def parse_classes_file(path):
@@ -97,6 +98,7 @@ class Yolov7Publisher:
             class id. Only for viszalization. If it is None, then no class
             labels are visualized.
         """
+        state_publisher = rospy.Publisher("yolov7/status",String,queue_size=1)
         self.img_size = img_size
         self.device = device
         self.class_labels = class_labels
@@ -121,7 +123,10 @@ class Yolov7Publisher:
             pub_topic, Detection2DArray, queue_size=queue_size
         )
         rospy.loginfo("YOLOv7 initialization complete. Ready to start inference")
+        state_publisher.publish("ready")
 
+        
+        
     def process_img_msg(self, img_msg: Image):
         """ callback function for publisher """
         np_img_orig = self.bridge.imgmsg_to_cv2(
@@ -210,5 +215,6 @@ if __name__ == "__main__":
         queue_size=queue_size,
         class_labels=classes
     )
+
 
     rospy.spin()
